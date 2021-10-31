@@ -42,8 +42,8 @@ public class RelationHandler {
     }
 
     public Mono<ServerResponse> getRelation(ServerRequest request) {
-        String u1 = request.queryParam("userId1").orElseThrow();
-        String u2 = request.queryParam("userId2").orElseThrow();
+        String u1 = request.queryParam("userId1").orElseThrow(null);
+        String u2 = request.queryParam("userId2").orElseThrow(null);
 
         Long userId1 = Long.parseLong(u1);
         Long userId2 = Long.parseLong(u2);

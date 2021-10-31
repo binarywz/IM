@@ -15,7 +15,7 @@ import java.util.List;
  *
  * @author yrw
  */
-public class ClientApplication {
+public class ClientApplicationSender {
 
     public static void main(String[] args) {
         Client.start();
@@ -29,7 +29,7 @@ public class ClientApplication {
         Relation relation = friends.get(0);
 
         //发送消息
-        chatApi.text(user.getUserId(),  user.getUserId(), "hello", user.getToken());
+        chatApi.text(user.getUserId(),  getFriend(relation, user.getUserId()), "hello", user.getToken());
     }
 
     private static Long getFriend(Relation relation, Long userId) {

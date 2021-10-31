@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * 连接Connector的客户端
  * Date: 2019-04-15
  * Time: 16:42
  *
