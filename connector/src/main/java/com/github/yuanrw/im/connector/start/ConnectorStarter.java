@@ -55,7 +55,8 @@ public class ConnectorStarter {
 
     private static Properties getProperties() throws IOException {
         InputStream inputStream;
-        String path = System.getProperty("config");
+//        String path = System.getProperty("config");
+        String path = "D:\\dev\\im\\yuanrw\\dev\\IM\\connector\\src\\main\\resources\\connector.properties";
         if (path == null) {
             throw new ImException("connector.properties is not defined");
         } else {

@@ -64,7 +64,8 @@ public class TransferStarter {
 
     private static Properties getProperties() throws IOException {
         InputStream inputStream;
-        String path = System.getProperty("config");
+//        String path = System.getProperty("config");
+        String path = "D:\\dev\\im\\yuanrw\\dev\\IM\\transfer\\src\\main\\resources\\transfer.properties";
         if (path == null) {
             throw new ImException("transfer.properties is not defined");
         } else {
