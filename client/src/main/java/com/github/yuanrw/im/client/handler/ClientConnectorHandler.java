@@ -36,7 +36,15 @@ public class ClientConnectorHandler extends SimpleChannelInboundHandler<Message>
     private FromConnectorParser fromConnectorParser;
     private ChannelHandlerContext ctx;
 
+    private String connectionId;
+
+    /**
+     * 发送方维护ACK等待队列
+     */
     private ServerAckWindow serverAckWindow;
+    /**
+     * 接收方维护当前会话中收到的最后一个消息的id，lastId
+     */
     private ClientAckWindow clientAckWindow;
 
     public ClientConnectorHandler(ClientMsgListener clientMsgListener) {
@@ -46,21 +54,30 @@ public class ClientConnectorHandler extends SimpleChannelInboundHandler<Message>
         this.fromConnectorParser = new FromConnectorParser();
     }
 
+    public ClientConnectorHandler(ClientMsgListener clientMsgListener, String connectionId) {
+        assert clientMsgListener != null;
+        this.connectionId = connectionId;
+        this.clientMsgListener = clientMsgListener;
+        this.fromConnectorParser = new FromConnectorParser();
+    }
+
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         this.ctx = ctx;
-        serverAckWindow = new ServerAckWindow(IdWorker.uuid(), 10, Duration.ofSeconds(5));
+        serverAckWindow = new ServerAckWindow(this.connectionId, 10, Duration.ofSeconds(5));
         clientAckWindow = new ClientAckWindow(5);
         clientMsgListener.online();
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Message msg) throws Exception {
-        logger.debug("[client] get msg: {}", msg.toString());
+        logger.debug("[client] get msg:\r\n{}", msg.toString());
 
+        // 检查from/dest
         checkFrom(msg, Internal.InternalMsg.Module.CONNECTOR);
         checkDest(msg, Internal.InternalMsg.Module.CLIENT);
 
+        // 策略模式: 根据不同的消息类型进行不同的处理
         fromConnectorParser.parse(msg, ctx);
     }
 
@@ -94,7 +111,10 @@ public class ClientConnectorHandler extends SimpleChannelInboundHandler<Message>
     }
 
     class FromConnectorParser extends AbstractMsgParser {
-
+        /**
+         * Connector消息解析器
+         * m: 消息
+         */
         @Override
         public void registerParsers() {
             InternalParser internalParser = new InternalParser(3);

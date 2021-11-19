@@ -11,7 +11,7 @@ import java.util.Scanner;
 public class MyClientApplication {
 
     private final static String CONNECTOR_HOST = "127.0.0.1";
-    private final static Integer CONNECTOR_PORT = 19081;
+    private final static Integer CONNECTOR_PORT = 9081;
     private final static String REST_URL = "http://127.0.0.1:8082";
 
     public static void main(String[] args) {
@@ -19,8 +19,8 @@ public class MyClientApplication {
 
         Scanner scan = new Scanner(System.in);
 
-        String username = scan.next();
-        String password = scan.next();
+        String username = scan.nextLine();
+        String password = scan.nextLine();
 
         MyClient myClient = new MyClient(CONNECTOR_HOST, CONNECTOR_PORT, REST_URL, username, password);
 
@@ -28,11 +28,11 @@ public class MyClientApplication {
 
         myClient.printUserInfo();
 
-        System.out.println("\r\nnow send msg to your friends\r\n\r\n");
+        System.out.println("\r\nnow send msg to your friends\r\n");
 
         while (scan.hasNext()) {
-            String userId = scan.next();
-            String text = scan.next();
+            String userId = scan.nextLine();
+            String text = scan.nextLine();
             myClient.send(userId, text);
         }
         scan.close();

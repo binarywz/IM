@@ -46,6 +46,9 @@ public class MyClient {
         for (Friend friend : friends) {
             System.out.println(friend.getUserId() + ": " + friend.getUsername());
         }
+
+        // 连接Connector
+        userApi.greetToConnector(userInfo.getId());
     }
 
     private ImClient start(String connectorHost, Integer connectorPort, String restUrl) {

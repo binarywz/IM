@@ -65,7 +65,7 @@ public class ImClient {
         assert clientMsgListener != null;
 
         userContext = injector.getInstance(UserContext.class);
-        handler = new ClientConnectorHandler(clientMsgListener);
+        handler = new ClientConnectorHandler(clientMsgListener, connectionId);
         userContext.setClientConnectorHandler(handler);
 
         startImClient(handler);

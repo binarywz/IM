@@ -17,7 +17,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
 /**
- * for client, every connection should has an ServerAckWindow
+ * 接收方窗口:
+ *  1.不重复
+ *  2.不乱序
  * Date: 2019-09-08
  * Time: 20:42
  *
@@ -29,7 +31,13 @@ public class ClientAckWindow {
     private final int maxSize;
 
     private AtomicBoolean first;
+    /**
+     * 接收方在当前会话中收到的最后一个消息的ID，处理重复消息
+     */
     private AtomicLong lastId;
+    /**
+     * 接收方消息暂存Map，处理乱序消息
+     */
     private ConcurrentMap<Long, ProcessMsgNode> notContinuousMap;
 
     public ClientAckWindow(int maxSize) {
@@ -99,11 +107,20 @@ public class ClientAckWindow {
             });
     }
 
-
+    /**
+     * 判断消息是否重复
+     * @param msgId
+     * @return
+     */
     private boolean isRepeat(Long msgId) {
         return msgId <= lastId.get();
     }
 
+    /**
+     * 判断是否连续
+     * @param msgId
+     * @return
+     */
     private boolean isContinuous(Long msgId) {
         //如果是本次会话的第一条消息
         if (first.compareAndSet(true, false)) {

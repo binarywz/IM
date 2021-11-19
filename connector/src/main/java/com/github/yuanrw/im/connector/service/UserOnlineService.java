@@ -48,6 +48,14 @@ public class UserOnlineService {
         this.userStatusService = userStatusServiceFactory.createService(properties);
     }
 
+    public ClientConn getConn(String userId,ChannelHandlerContext ctx) {
+        //save connection
+        ClientConn conn = new ClientConn(ctx);
+        conn.setUserId(userId);
+        clientConnContext.addConn(conn);
+        return conn;
+    }
+
     public ClientConn userOnline(String userId, ChannelHandlerContext ctx) {
         //get all offline msg and send
         List<Message> msgs = offlineService.pollOfflineMsg(userId);
@@ -61,11 +69,6 @@ public class UserOnlineService {
             }
         });
 
-        //save connection
-        ClientConn conn = new ClientConn(ctx);
-        conn.setUserId(userId);
-        clientConnContext.addConn(conn);
-
         //user is online
         String oldConnectorId = userStatusService.online(userId, ConnectorTransferHandler.CONNECTOR_ID);
         if (oldConnectorId != null) {
@@ -73,7 +76,7 @@ public class UserOnlineService {
             sendErrorToClient("already online", ctx);
         }
 
-        return conn;
+        return clientConnContext.getConnByUserId(userId);
     }
 
     private void sendErrorToClient(String errorMsg, ChannelHandlerContext ctx) {

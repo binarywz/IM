@@ -17,7 +17,8 @@ import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 /**
- * for server, every connection should has an ServerAckWindow
+ * 发送方窗口:
+ *  维护ACK等待队列
  * Date: 2019-09-08
  * Time: 12:36
  *
@@ -25,7 +26,15 @@ import java.util.function.Consumer;
  */
 public class ServerAckWindow {
     private static Logger logger = LoggerFactory.getLogger(ServerAckWindow.class);
+    /**
+     * 分两种情况:
+     * 1.服务端发送窗口，windowMap中存在多组{connection:ServerAckWindow}
+     * 2.客户端发送窗口，windowMap中只有一组{connection:ServerAckWindow}
+     */
     private static Map<Serializable, ServerAckWindow> windowsMap;
+    /**
+     * 发送方ACK等待队列轮询线程
+     */
     private static ExecutorService executorService;
 
     private final Duration timeout;
@@ -96,6 +105,11 @@ public class ServerAckWindow {
 
     /**
      * single thread do it
+     * 轮询发送ACK等待队列，若有超时未收到ACK的，就取出消息重发
+     *
+     * 超时未收到ACK消息的两种处理方式:
+     * 1.与TCP/IP一样不断发送直到收到ACK位置
+     * 2.设置一个最大重试次数，超过这个次数还没收到ACK，就是用失败机制处理
      */
     private static void checkTimeoutAndRetry() {
         while (true) {

@@ -74,6 +74,6 @@ public class ChatApi {
             .setAckMsgId(msg.getId())
             .build();
 
-        handler.getCtx().writeAndFlush(read);
+        this.sendToConnector(read.getId(), read);
     }
 }

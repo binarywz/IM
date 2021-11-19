@@ -84,9 +84,10 @@ public class ConnectorClientHandler extends SimpleChannelInboundHandler<Message>
 
             //do not use clientAckWindow, buz don't know netId yet
             parser.register(Internal.InternalMsg.MsgType.GREET, (m, ctx) -> {
-                ClientConn conn = userOnlineService.userOnline(m.getMsgBody(), ctx);
+                ClientConn conn = userOnlineService.getConn(m.getMsgBody(), ctx);
                 serverAckWindow = new ServerAckWindow(conn.getNetId(), 10, Duration.ofSeconds(5));
                 clientAckWindow = new ClientAckWindow(5);
+                userOnlineService.userOnline(m.getMsgBody(), ctx);
                 ctx.writeAndFlush(getAck(m.getId()));
             });
 

@@ -56,7 +56,7 @@ public class UserApi {
     public UserInfo login(String username, String password) {
         UserInfo userInfo = clientRestService.login(username, password);
         //等待connector的ack信息
-        greetToConnector(userInfo.getId());
+//        greetToConnector(userInfo.getId());
 
         assert userInfo.getId() != null;
 
@@ -66,7 +66,7 @@ public class UserApi {
         return userInfo;
     }
 
-    private void greetToConnector(String userId) {
+    public void greetToConnector(String userId) {
         Internal.InternalMsg greet = Internal.InternalMsg.newBuilder()
             .setId(IdWorker.snowGenId())
             .setFrom(Internal.InternalMsg.Module.CLIENT)

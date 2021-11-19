@@ -3,6 +3,7 @@ package com.github.yuanrw.im.common.parse;
 import com.github.yuanrw.im.protobuf.generate.Internal;
 
 /**
+ * 内部消息解析器
  * Date: 2019-05-26
  * Time: 20:36
  *

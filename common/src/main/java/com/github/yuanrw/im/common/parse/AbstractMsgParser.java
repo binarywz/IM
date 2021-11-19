@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * 消息解析器
  * Date: 2019-05-18
  * Time: 16:17
  *
@@ -20,6 +21,10 @@ import java.util.Map;
 public abstract class AbstractMsgParser {
     private Logger logger = LoggerFactory.getLogger(AbstractMsgParser.class);
 
+    /**
+     * 策略模式
+     * 解析器容器: 根据不同消息类型使用不同的Consumer进行处理
+     */
     private Map<Class<? extends Message>, ImBiConsumer<? extends Message, ChannelHandlerContext>> parserMap;
 
     protected AbstractMsgParser() {
