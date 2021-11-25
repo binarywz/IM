@@ -29,6 +29,7 @@ import static com.github.yuanrw.im.common.parse.AbstractMsgParser.checkFrom;
 
 /**
  * 处理客户端的消息
+ * 一个客户端会建立一个连接，ConnectorClientHandler针对具体连接
  * Date: 2019-02-09
  * Time: 23:26
  *
@@ -42,12 +43,18 @@ public class ConnectorClientHandler extends SimpleChannelInboundHandler<Message>
     private ClientConnContext clientConnContext;
     private FromClientParser fromClientParser;
 
+    /**
+     * 发送方维护ACK等待队列
+     */
     private ServerAckWindow serverAckWindow;
+    /**
+     * 接收方维护当前会话中收到的最后一个消息的id，lastId
+     */
     private ClientAckWindow clientAckWindow;
 
     @Inject
     public ConnectorClientHandler(ConnectorToClientService connectorToClientService, UserOnlineService userOnlineService, ClientConnContext clientConnContext) {
-        this.fromClientParser = new FromClientParser();
+        this.fromClientParser = new FromClientParser(); // 完成不同消息解析器的注册，策略模式
         this.connectorToClientService = connectorToClientService;
         this.userOnlineService = userOnlineService;
         this.clientConnContext = clientConnContext;
@@ -83,14 +90,35 @@ public class ConnectorClientHandler extends SimpleChannelInboundHandler<Message>
             InternalParser parser = new InternalParser(3);
 
             //do not use clientAckWindow, buz don't know netId yet
+            /**
+             * 注册GREET消息处理器:
+             * 1.本地缓存userId与此台Connector之间建立的连接
+             * 2.初始化serverAckWindow/clientAckWindow
+             * 3.用户正式上线: 在Redis中缓存userId:ConnectorTransferHandler.CONNECTOR_ID的关系
+             * 4.为GREET消息响应ACK
+             */
             parser.register(Internal.InternalMsg.MsgType.GREET, (m, ctx) -> {
+                /**
+                 * m.getMsgBody() -> userId，此处为本地缓存userId:connection之间的关系
+                 */
                 ClientConn conn = userOnlineService.getConn(m.getMsgBody(), ctx);
                 serverAckWindow = new ServerAckWindow(conn.getNetId(), 10, Duration.ofSeconds(5));
                 clientAckWindow = new ClientAckWindow(5);
+                /**
+                 * 用户正式上线，并在Redis中缓存userId:ConnectorTransferHandler.CONNECTOR_ID的关系
+                 * ConnectorTransferHandler.CONNECTOR_ID代表此台Connector与Transfer之间连接的编号，同时也是在IM系统中的全局ID
+                 */
                 userOnlineService.userOnline(m.getMsgBody(), ctx);
+                /**
+                 * 为GREET消息响应ACK，消息体为此条GREET消息的ID
+                 */
                 ctx.writeAndFlush(getAck(m.getId()));
             });
 
+            /**
+             * 注册ACK消息处理器:
+             * 处理ACK等待队列中消息m对应的事件
+             */
             parser.register(Internal.InternalMsg.MsgType.ACK, (m, ctx) ->
                 serverAckWindow.ack(m));
 

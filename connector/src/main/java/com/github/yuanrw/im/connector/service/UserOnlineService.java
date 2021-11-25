@@ -56,8 +56,15 @@ public class UserOnlineService {
         return conn;
     }
 
+    /**
+     * 客户端发起GREET消息，userId为用户pin
+     * @param userId
+     * @param ctx
+     * @return
+     */
     public ClientConn userOnline(String userId, ChannelHandlerContext ctx) {
         //get all offline msg and send
+        // TODO 客户端应直接拉取离线消息，拉取完再建立与Connector的连接
         List<Message> msgs = offlineService.pollOfflineMsg(userId);
         msgs.forEach(msg -> {
             try {

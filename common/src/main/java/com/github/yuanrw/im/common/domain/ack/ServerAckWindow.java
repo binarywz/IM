@@ -40,6 +40,9 @@ public class ServerAckWindow {
     private final Duration timeout;
     private final int maxSize;
 
+    /**
+     * ACK等待队列
+     */
     private ConcurrentHashMap<Long, ResponseCollector<Internal.InternalMsg>> responseCollectorMap;
 
     static {
