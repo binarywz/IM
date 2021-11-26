@@ -62,11 +62,14 @@ public class ConnectorClientHandler extends SimpleChannelInboundHandler<Message>
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Message msg) throws Exception {
-        logger.debug("[connector] get msg: {}", msg.toString());
+        logger.warn("[connector] get msg: {}", msg.toString());
 
         checkFrom(msg, Internal.InternalMsg.Module.CLIENT);
         checkDest(msg, Internal.InternalMsg.Module.CONNECTOR);
 
+        /**
+         * 解析收到的消息，并根据不同的消息进行相应的处理
+         */
         fromClientParser.parse(msg, ctx);
     }
 
@@ -83,6 +86,9 @@ public class ConnectorClientHandler extends SimpleChannelInboundHandler<Message>
         clientConnContext.removeConn(ctx);
     }
 
+    /**
+     * 客服端消息解析器
+     */
     class FromClientParser extends AbstractMsgParser {
 
         @Override
@@ -116,16 +122,24 @@ public class ConnectorClientHandler extends SimpleChannelInboundHandler<Message>
             });
 
             /**
-             * 注册ACK消息处理器:
-             * 处理ACK等待队列中消息m对应的事件
+             * 注册内部ACK消息处理器: 真正的ACK消息
+             * 处理ACK等待队列中消息m对应的事件,Internal.InternalMsg.MsgType.ACK为destId应答给fromId的ACK消息
              */
             parser.register(Internal.InternalMsg.MsgType.ACK, (m, ctx) ->
                 serverAckWindow.ack(m));
 
             //now we know netId
+            /**
+             *
+             */
             register(Chat.ChatMsg.class, (m, ctx) -> offerChat(m.getId(), m, ctx, ignore ->
                 connectorToClientService.doChatToClientOrTransferAndFlush(m)));
 
+            /**
+             * 注册ACK消息处理器: READ/DELIVERED
+             * 1.若发送消息的用户连接在本台服务器上，则直接对相应的Client发送ACK消息
+             * 2.若发送消息的用户连接在其他服务器上，则发送至Transfer进行转发至对应的Connector
+             */
             register(Ack.AckMsg.class, (m, ctx) -> offerAck(m.getId(), m, ctx, ignore ->
                 connectorToClientService.doSendAckToClientOrTransferAndFlush(m))
             );

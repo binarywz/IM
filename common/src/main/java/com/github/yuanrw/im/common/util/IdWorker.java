@@ -42,11 +42,11 @@ public class IdWorker {
     /**
      * consistent id
      * for ChatMsg, AckMsg
-     *
+     * TODO 参数应该为connectionId，表示对应连接的Id
      * @return
      */
-    public static Long nextId(Serializable connectorId) {
-        return sessionMap.computeIfAbsent(connectorId,
+    public static Long nextId(Serializable connectionId) {
+        return sessionMap.computeIfAbsent(connectionId,
             key -> new AtomicLong(0)).incrementAndGet();
     }
 }
